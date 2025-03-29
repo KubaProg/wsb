@@ -1,0 +1,64 @@
+/* style.css */
+
+/* Styl bazowy */
+body {
+    font-family: Arial, sans-serif;
+    padding: 20px;
+    margin: 0;
+    background-color: #f9f9f9;
+    /* Dodano delikatne tło */
+    color: #333;
+}
+
+/* Nagłówek */
+h1 {
+    color: #2c3e50;
+    /* Zmieniono na ciemniejszy niebieskoszary */
+    text-align: center;
+    /* Wyśrodkowanie nagłówka */
+    margin-top: 40px;
+}
+
+/* Paragraf */
+p {
+    color: #666;
+    font-size: 1.1em;
+    /* Trochę większy font */
+    line-height: 1.6;
+    /* Lepsza czytelność */
+    text-align: center;
+    margin: 20px 0;
+}
+
+/* Styl przycisku - jeśli dodasz jakiś */
+button {
+    background-color: #3498db;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    font-size: 1em;
+    border-radius: 5px;
+    cursor: pointer;
+    display: block;
+    margin: 20px auto;
+}
+
+/* Efekt hover */
+button:hover {
+    background-color: #2980b9;
+}
+
+/* Styl responsywny */
+@media (max-width: 600px) {
+    body {
+        padding: 10px;
+    }
+
+    h1 {
+        font-size: 1.5em;
+    }
+
+    p {
+        font-size: 1em;
+    }
+}
