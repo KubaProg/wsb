@@ -1,23 +1,41 @@
 <!DOCTYPE html>
-
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
     <title>Moja aplikacja PWA</title>
-
     <link rel="stylesheet" href="/style.css" />
-
     <link rel="manifest" href="/manifest.json" />
   </head>
 
   <body>
-    <h1>Moja pierwsza aplikacja PWA</h1>
+    <div id="loginPage">
+      <form class="login-form" id="loginForm">
+        <h1>Logowanie</h1>
+        <input type="text" id="username" placeholder="Nazwa użytkownika" />
+        <input type="password" id="password" placeholder="Hasło" />
+        <button type="submit">Zaloguj</button>
+        <a href="#" class="forgot-password">Nie pamiętasz hasła?</a>
+      </form>
+    </div>
 
-    <p>Witaj świecie!</p>
+    <div id="dashboard" style="display: none">
+      <header>
+        <h1>Dashboard</h1>
+        <button id="logoutBtn">Wyloguj</button>
+      </header>
+      <nav>
+        <ul>
+          <li><a href="#">Strona główna</a></li>
+          <li><a href="#">Moje konto</a></li>
+          <li><a href="#">Ustawienia</a></li>
+        </ul>
+      </nav>
+      <main>
+        <p>Witaj użytkowniku!</p>
+      </main>
+    </div>
 
-    <script src="script.js"></script>
+    <script src="/script.js"></script>
   </body>
 </html>
