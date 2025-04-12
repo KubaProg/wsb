@@ -1,0 +1,2 @@
+cja {rok}:")
+    print("- Najwię

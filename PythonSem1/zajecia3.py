@@ -1,103 +1,92 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 
-# ---------- ZESTAW 1 ----------
-# 1. Wczytanie danych nauczycieli
-nauczyciele = pd.read_csv("nauczyciele.csv")
+# 1. Wczytaj plik i usuń cudzysłowy z nazw kolumn
+df = pd.read_csv("nauczyciele.csv", sep=";", quotechar='"')
+df.columns = df.columns.str.replace('"', '').str.strip()
 
-# 2. Wstępne czyszczenie
-nauczyciele.dropna(how="all", inplace=True)  # usuń puste wiersze
-nauczyciele.columns = nauczyciele.columns.str.strip()  # usuń spacje z nazw kolumn
+# 2. Zamień przecinki na kropki i konwertuj liczby
+df = df.applymap(lambda x: str(x).replace(",", ".") if isinstance(x, str) else x)
+for col in df.columns[2:]:
+    df[col] = pd.to_numeric(df[col], errors="coerce")
 
-# Przykładowe wyświetlenie kolumn:
-print("Kolumny w danych nauczyciele:", nauczyciele.columns.tolist())
+# 3. Przekształć z szerokiego formatu do długiego
+df_long = df.melt(id_vars=["Kod", "Nazwa"], var_name="Kategoria", value_name="Liczba")
 
-# 3. Wykresy
+# 4. Rozbij kategorię na kolumny
+def split_kategoria(kat):
+    parts = kat.split(";")
+    return pd.Series({
+        "Stanowisko": parts[0] if len(parts) > 0 else None,
+        "Płeć": parts[1] if len(parts) > 1 else None,
+        "Typ uczelni": parts[2] if len(parts) > 2 else None,
+        "Rok": int(parts[3]) if len(parts) > 3 and parts[3].isdigit() else None
+    })
 
-# a) nauczyciele w latach 2014–2018 wg województw
-etat_lata = nauczyciele[
-    (nauczyciele["Rok"].between(2014, 2018)) & (nauczyciele["Stanowisko"] == "Ogółem")
+df_long = df_long.join(df_long["Kategoria"].apply(split_kategoria))
+df_long.drop(columns=["Kategoria", "Kod"], inplace=True)
+df_long.rename(columns={"Nazwa": "Województwo"}, inplace=True)
+
+# 5. Czyszczenie danych
+df_long["Liczba"] = pd.to_numeric(df_long["Liczba"], errors="coerce")
+df_long.dropna(subset=["Liczba", "Rok"], inplace=True)
+df_long["Województwo"] = df_long["Województwo"].str.upper()
+df_long["Płeć"] = df_long["Płeć"].str.lower()
+df_long["Stanowisko"] = df_long["Stanowisko"].str.lower()
+df_long["Typ uczelni"] = df_long["Typ uczelni"].str.lower()
+
+# 6. Wykresy
+
+# a) nauczyciele ogółem w latach 2014–2018 wg województw
+etat_lata = df_long[
+    (df_long["Rok"].between(2014, 2018)) &
+    (df_long["Stanowisko"] == "nauczyciele akademiccy") &
+    (df_long["Płeć"] == "ogółem")
 ]
 etat_lata_grouped = etat_lata.groupby(["Województwo", "Rok"])["Liczba"].sum().unstack()
-etat_lata_grouped.plot(kind="bar", figsize=(10, 6))
-plt.title("Nauczyciele wg województw (2014-2018)")
-plt.ylabel("Liczba zatrudnionych")
+etat_lata_grouped.plot(kind="bar", figsize=(12, 6))
+plt.title("Nauczyciele akademiccy ogółem wg województw (2014-2018)")
+plt.ylabel("Liczba")
 plt.tight_layout()
 plt.show()
 
-# b) stanowiska w woj. śląskim (2014–2018)
-slaskie = nauczyciele[
-    (nauczyciele["Rok"].between(2014, 2018)) & (nauczyciele["Województwo"] == "śląskie")
+# b) stanowiska w woj. śląskim
+slaskie = df_long[
+    (df_long["Województwo"] == "ŚLĄSKIE") &
+    (df_long["Rok"].between(2014, 2018))
 ]
 slaskie_grouped = slaskie.groupby(["Stanowisko", "Rok"])["Liczba"].sum().unstack()
-slaskie_grouped.plot(kind="bar", figsize=(10, 6))
+slaskie_grouped.plot(kind="bar", figsize=(12, 6))
 plt.title("Stanowiska w woj. śląskim (2014–2018)")
 plt.ylabel("Liczba")
 plt.tight_layout()
 plt.show()
 
 # c) uniwersytety vs szkoły techniczne wg płci w śląskim
-slaskie_typ = nauczyciele[nauczyciele["Województwo"] == "śląskie"]
+slaskie_typ = df_long[df_long["Województwo"] == "ŚLĄSKIE"]
 typ_grouped = slaskie_typ.groupby(["Typ uczelni", "Płeć"])["Liczba"].sum().unstack()
-typ_grouped.plot(kind="bar", figsize=(6, 5))
-plt.title("Typ uczelni vs Płeć – śląskie")
-plt.ylabel("Liczba zatrudnionych")
+typ_grouped.plot(kind="bar", figsize=(8, 6))
+plt.title("Typ uczelni vs Płeć – ŚLĄSKIE")
+plt.ylabel("Liczba")
 plt.tight_layout()
 plt.show()
 
-# 4. Analizy
+# 7. Analizy
 
 # a) tylko woj. śląskie
-print("\nDane woj. śląskie:\n", nauczyciele[nauczyciele["Województwo"] == "śląskie"])
+print("\nDane woj. śląskie:\n", df_long[df_long["Województwo"] == "ŚLĄSKIE"].head(10))
 
-# b) woj. z największą i najmniejszą liczbą nauczycieli
-woj_grouped = nauczyciele.groupby("Województwo")["Liczba"].sum()
-print("\nNajwięcej nauczycieli:", woj_grouped.idxmax(), woj_grouped.max())
-print("Najmniej nauczycieli:", woj_grouped.idxmin(), woj_grouped.min())
+# b) woj. z największą i najmniejszą liczbą nauczycieli akademickich
+woj_grouped = df_long[df_long["Stanowisko"] == "nauczyciele akademiccy"].groupby("Województwo")["Liczba"].sum()
+print("\nNajwięcej nauczycieli akademickich:", woj_grouped.idxmax(), woj_grouped.max())
+print("Najmniej nauczycieli akademickich:", woj_grouped.idxmin(), woj_grouped.min())
 
-# c) woj. gdzie kobiety > średnia
-kobiety = nauczyciele[nauczyciele["Płeć"] == "Kobiety"]
-kobiety_woj = kobiety.groupby("Województwo")["Liczba"].sum()
-srednia_k = kobiety_woj.mean()
-ponad_srednia = kobiety_woj[kobiety_woj > srednia_k]
-print("\nWojewództwa z kobietami ponad średnią:\n", ponad_srednia)
+# c) woj. gdzie liczba kobiet > średnia
+kobiety = df_long[df_long["Płeć"] == "kobiety"]
+kobiety_sum = kobiety.groupby("Województwo")["Liczba"].sum()
+srednia = kobiety_sum.mean()
+print("\nŚrednia liczba kobiet:", srednia)
+print("Województwa z kobietami ponad średnią:\n", kobiety_sum[kobiety_sum > srednia])
 
-# ---------- ZESTAW 2 ----------
-# 1. Wczytaj inflację (wiele arkuszy)
-inflacja_xlsx = pd.read_excel("inflacja.xlsx", sheet_name=None)
-
-# 2. Usuwanie zbędnych wierszy i kolumn (dla każdego arkusza)
-inflacja = {}
-for rok, df in inflacja_xlsx.items():
-    df = df.dropna(how="all").dropna(axis=1, how="all")  # usuń puste
-    df.columns = df.iloc[0]  # ustaw pierwszy wiersz jako nagłówki
-    df = df[1:]
-    inflacja[rok] = df.reset_index(drop=True)
-
-# 3. Wykresy
-def wykres_wartosci(df_dict, kolumna, tytul):
-    df_combined = pd.DataFrame({
-        rok: pd.to_numeric(df[kolumna], errors='coerce') for rok, df in df_dict.items()
-    })
-    df_combined.plot(kind="bar", figsize=(8, 6))
-    plt.title(tytul)
-    plt.ylabel("Inflacja [%]")
-    plt.tight_layout()
-    plt.show()
-
-# a) Rok do grudnia poprzedniego (Table 1)
-wykres_wartosci(inflacja, "Rok do grudnia poprzedniego", "Inflacja – Rok do grudnia poprzedniego")
-
-# b) Październik do września (Table 2)
-wykres_wartosci(inflacja, "październik", "Inflacja – Październik do września")
-
-# c) Rok do analogicznego miesiąca poprzedniego (Table 3)
-wykres_wartosci(inflacja, "Rok do analogicznego miesiąca poprzedniego", "Inflacja – Rok do analogicznego miesiąca")
-
-# 4. Analizy inflacji
-for rok, df in inflacja.items():
-    df_num = df.apply(pd.to_numeric, errors='coerce')
-    print(f"\nInflacja {rok}:")
-    print("- Największa wartość:\n", df_num.max())
-    print("- Najmniejsza wartość:\n", df_num.min())
-    print("- Średnia wartość:\n", df_num.mean())
+# 8. Pauza na koniec
+input("\nNaciśnij Enter, aby zakończyć...")
