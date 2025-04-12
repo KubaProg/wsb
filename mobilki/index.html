@@ -9,16 +9,42 @@
   </head>
 
   <body>
+    <!-- Logowanie -->
     <div id="loginPage">
       <form class="login-form" id="loginForm">
         <h1>Logowanie</h1>
-        <input type="text" id="username" placeholder="Nazwa użytkownika" />
-        <input type="password" id="password" placeholder="Hasło" />
+        <input
+          type="text"
+          id="username"
+          placeholder="Nazwa użytkownika"
+          required
+        />
+        <input type="password" id="password" placeholder="Hasło" required />
         <button type="submit">Zaloguj</button>
         <a href="#" class="forgot-password">Nie pamiętasz hasła?</a>
+        <p>
+          <a href="#" id="switchToRegister">Nie masz konta? Zarejestruj się</a>
+        </p>
       </form>
     </div>
 
+    <!-- Rejestracja -->
+    <div id="registrationForm" style="display: none">
+      <form id="registerForm" class="login-form">
+        <h1>Rejestracja</h1>
+        <input
+          type="text"
+          id="username"
+          placeholder="Nazwa użytkownika"
+          required
+        />
+        <input type="password" id="password" placeholder="Hasło" required />
+        <button type="submit">Zarejestruj</button>
+        <p><a href="#" id="switchToLogin">Masz już konto? Zaloguj się</a></p>
+      </form>
+    </div>
+
+    <!-- Dashboard -->
     <div id="dashboard" style="display: none">
       <header>
         <h1>Dashboard</h1>

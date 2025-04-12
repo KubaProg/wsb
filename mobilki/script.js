@@ -1,3 +1,5 @@
+const API_URL = 'http://localhost:3000';
+
 // Informacja o działaniu skryptu
 console.log('Skrypt JavaScript działa!');
 
@@ -15,57 +17,95 @@ if ('serviceWorker' in navigator) {
   });
 }
 
-// Sprawdzanie stanu zalogowania
-const isLoggedIn = () => {
-  return localStorage.getItem('loggedIn') === 'true';
-};
+// Sprawdzenie stanu logowania
+const isLoggedIn = () => localStorage.getItem('loggedIn') === 'true';
 
-// Logowanie
-const login = (event) => {
+// Rejestracja użytkownika
+const register = async (event) => {
   event.preventDefault();
+  const username = document.getElementById('username').value;
+  const password = document.getElementById('password').value;
 
-  const username = document.getElementById("username").value;
-  const password = document.getElementById("password").value;
+  try {
+    const response = await fetch(`${API_URL}/api/users`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password }),
+    });
 
-  if (username === "admin" && password === "admin") {
-    localStorage.setItem('loggedIn', 'true');
-    showDashboard();
-  } else {
-    alert("Nieprawidłowa nazwa użytkownika lub hasło!");
+    const data = await response.json();
+
+    if (!response.ok) {
+      alert(data.message || 'Błąd rejestracji');
+      return;
+    }
+
+    alert(data.message || 'Rejestracja zakończona!');
+    showLoginPage();
+  } catch (error) {
+    console.error('Błąd:', error);
   }
 };
 
-// Wylogowywanie
+// Logowanie
+const login = async (event) => {
+  event.preventDefault();
+  const username = document.getElementById('username').value;
+  const password = document.getElementById('password').value;
+
+  try {
+    const response = await fetch(`${API_URL}/api/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      alert(data.message || 'Błąd logowania');
+      return;
+    }
+
+    localStorage.setItem('loggedIn', 'true');
+    showDashboard();
+  } catch (error) {
+    console.error('Błąd:', error);
+  }
+};
+
+// Wylogowanie
 const logout = () => {
   localStorage.removeItem('loggedIn');
   showLoginPage();
 };
 
-// Pokazywanie paneli
+// Widoki
 const showLoginPage = () => {
   document.getElementById('loginPage').style.display = 'block';
+  document.getElementById('registrationForm').style.display = 'none';
+  document.getElementById('dashboard').style.display = 'none';
+};
+
+const showRegistrationForm = () => {
+  document.getElementById('loginPage').style.display = 'none';
+  document.getElementById('registrationForm').style.display = 'block';
   document.getElementById('dashboard').style.display = 'none';
 };
 
 const showDashboard = () => {
   document.getElementById('loginPage').style.display = 'none';
+  document.getElementById('registrationForm').style.display = 'none';
   document.getElementById('dashboard').style.display = 'block';
 };
 
 // Inicjalizacja
 window.onload = () => {
-  // Obsługa formularza logowania
-  const loginForm = document.getElementById('loginForm');
-  loginForm.addEventListener('submit', login);
+  document.getElementById('loginForm').addEventListener('submit', login);
+  document.getElementById('registerForm').addEventListener('submit', register);
+  document.getElementById('logoutBtn').addEventListener('click', logout);
+  document.getElementById('switchToRegister').addEventListener('click', showRegistrationForm);
+  document.getElementById('switchToLogin').addEventListener('click', showLoginPage);
 
-  // Obsługa przycisku wylogowania
-  const logoutBtn = document.getElementById('logoutBtn');
-  logoutBtn.addEventListener('click', logout);
-
-  // Sprawdzenie stanu logowania
-  if (isLoggedIn()) {
-    showDashboard();
-  } else {
-    showLoginPage();
-  }
+  isLoggedIn() ? showDashboard() : showLoginPage();
 };

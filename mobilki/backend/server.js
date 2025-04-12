@@ -1,11 +1,14 @@
-// server.js
-
 const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
+const cors = require('cors'); // Dodaj CORS
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// Middleware
+app.use(cors());
+app.use(bodyParser.json());
 
 // Połączenie z bazą danych MongoDB
 mongoose.connect('mongodb://localhost:27017/myapp', {
@@ -25,9 +28,7 @@ const userSchema = new mongoose.Schema({
 });
 const User = mongoose.model('User', userSchema);
 
-app.use(bodyParser.json());
-
-// Dodaj nowego użytkownika
+// Rejestracja użytkownika
 app.post('/api/users', async (req, res) => {
     const { username, password } = req.body;
 
@@ -43,6 +44,28 @@ app.post('/api/users', async (req, res) => {
     } catch (error) {
         console.error('Błąd podczas tworzenia użytkownika:', error);
         res.status(500).json({ message: 'Wystąpił błąd podczas tworzenia użytkownika.' });
+    }
+});
+
+// 🔐 Logowanie użytkownika
+app.post('/api/login', async (req, res) => {
+    const { username, password } = req.body;
+
+    try {
+        const user = await User.findOne({ username });
+
+        if (!user) {
+            return res.status(400).json({ message: 'Nieprawidłowy login lub hasło.' });
+        }
+
+        if (user.password !== password) {
+            return res.status(400).json({ message: 'Nieprawidłowy login lub hasło.' });
+        }
+
+        res.status(200).json({ message: 'Zalogowano pomyślnie.' });
+    } catch (error) {
+        console.error('Błąd podczas logowania:', error);
+        res.status(500).json({ message: 'Wystąpił błąd podczas logowania.' });
     }
 });
 
