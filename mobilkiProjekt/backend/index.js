@@ -14,6 +14,10 @@ app.use(bodyParser.json());
 
 // Routes
 app.use('/api/transactions', transactionsRoutes);
+// Web Push Notifications
+const subscribeRoutes = require('./routes/subscribe');
+app.use('/api/subscribe', subscribeRoutes);
+
 
 // MongoDB Connection
 mongoose.connect('mongodb://localhost:27017/finance-app', {
