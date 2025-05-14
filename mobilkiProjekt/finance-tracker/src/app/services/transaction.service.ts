@@ -1,4 +1,3 @@
-// === transaction.service.ts ===
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, of } from 'rxjs';
@@ -8,7 +7,7 @@ import { LocalStorageService } from './LocalStorageServce';
 
 @Injectable({ providedIn: 'root' })
 export class TransactionService {
-  private readonly API_URL = 'http://localhost:3000/api/transactions';
+  private readonly API_URL = 'http://localhost:4000/api/transactions';
   private readonly LOCAL_KEY = 'transactions';
   private readonly PENDING_KEY = 'pending-transactions';
 
@@ -18,13 +17,20 @@ export class TransactionService {
   constructor(private http: HttpClient, private localStorage: LocalStorageService) {}
 
   loadTransactions(): void {
+    if (!navigator.onLine) {
+      console.warn('⚠️ Offline – używam danych z localStorage');
+      const local = this.localStorage.load<Transaction[]>(this.LOCAL_KEY) || [];
+      this.transactionsSubject.next(local);
+      return;
+    }
+
     this.http.get<Transaction[]>(this.API_URL).pipe(
       tap(data => {
         this.localStorage.save(this.LOCAL_KEY, data);
         this.transactionsSubject.next(data);
       }),
       catchError(() => {
-        console.warn('⚠️ Using localStorage fallback for transactions');
+        console.warn('⚠️ Błąd pobierania – fallback do localStorage');
         const local = this.localStorage.load<Transaction[]>(this.LOCAL_KEY) || [];
         this.transactionsSubject.next(local);
         return of([]);
@@ -33,21 +39,30 @@ export class TransactionService {
   }
 
   addTransaction(tx: Transaction): Observable<Transaction> {
-    if (navigator.onLine) {
-      return this.http.post<Transaction>(this.API_URL, tx).pipe(
-        tap(() => this.loadTransactions())
-      );
-    } else {
-      console.warn('⛔ Brak połączenia – zapisuję lokalnie');
+    if (!navigator.onLine) {
+      console.warn('⛔ Brak połączenia – zapisuję lokalnie (offline)');
       const pending = this.localStorage.load<Transaction[]>(this.PENDING_KEY) || [];
       this.localStorage.save(this.PENDING_KEY, [...pending, tx]);
 
-      // Dodaj lokalnie do listy
       const current = this.transactionsSubject.getValue();
       this.transactionsSubject.next([...current, tx]);
 
       return of(tx);
     }
+
+    return this.http.post<Transaction>(this.API_URL, tx).pipe(
+      tap(() => this.loadTransactions()),
+      catchError(err => {
+        console.warn('⚠️ Błąd zapisu — fallback do localStorage', err);
+        const pending = this.localStorage.load<Transaction[]>(this.PENDING_KEY) || [];
+        this.localStorage.save(this.PENDING_KEY, [...pending, tx]);
+
+        const current = this.transactionsSubject.getValue();
+        this.transactionsSubject.next([...current, tx]);
+
+        return of(tx);
+      })
+    );
   }
 
   syncPendingTransactions(): void {

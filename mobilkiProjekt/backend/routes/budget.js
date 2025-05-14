@@ -20,4 +20,25 @@ router.post('/', async (req, res) => {
   res.json(updated);
 });
 
+router.post('/test', (req, res) => {
+  const sub = getSubscription();
+  if (!sub) return res.status(400).json({ error: 'Brak subskrypcji' });
+
+  const payload = JSON.stringify({
+    title: '🔔 Testowe powiadomienie',
+    body: 'To jest testowy push od backendu'
+  });
+
+  webpush.sendNotification(sub, payload)
+    .then(() => {
+      console.log('✅ Testowe powiadomienie wysłane');
+      res.json({ message: 'Test sent' });
+    })
+    .catch(err => {
+      console.error('❌ Błąd przy testowym pushu', err);
+      res.status(500).json({ error: 'Push error' });
+    });
+});
+
+
 module.exports = router;

@@ -7,7 +7,7 @@ import { catchError, map, tap } from 'rxjs/operators';
 
 @Injectable({ providedIn: 'root' })
 export class BudgetService {
-  private readonly API_URL = 'http://localhost:3000/api/budget';
+  private readonly API_URL = 'http://localhost:4000/api/budget';
   private readonly STORAGE_KEY = 'monthlyBudget';
   private readonly PENDING_KEY = 'pending-budget';
 
@@ -18,19 +18,26 @@ export class BudgetService {
     return `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, '0')}`;
   }
 
-  loadBudget(): Observable<number> {
-    const month = this.getMonthKey();
+loadBudget(): Observable<number> {
+  const month = this.getMonthKey();
 
-    return this.http.get<{ amount: number }>(`${this.API_URL}/${month}`).pipe(
-      tap(data => this.localStorage.save(this.STORAGE_KEY, { ...data, month })),
-      map(data => data.amount),
-      catchError(() => {
-        console.warn('⚠️ Using localStorage fallback for budget');
-        const local = this.localStorage.load<{ amount: number, month: string }>(this.STORAGE_KEY);
-        return of(local?.amount || 0);
-      })
-    );
+  if (!navigator.onLine) {
+    console.warn('⚠️ Offline – używam lokalnego budżetu');
+    const local = this.localStorage.load<{ amount: number, month: string }>(this.STORAGE_KEY);
+    return of(local?.amount || 0);
   }
+
+  return this.http.get<{ amount: number }>(`${this.API_URL}/${month}`).pipe(
+    tap(data => this.localStorage.save(this.STORAGE_KEY, { ...data, month })),
+    map(data => data.amount),
+    catchError(() => {
+      console.warn('⚠️ Błąd pobierania budżetu – fallback do localStorage');
+      const local = this.localStorage.load<{ amount: number, month: string }>(this.STORAGE_KEY);
+      return of(local?.amount || 0);
+    })
+  );
+}
+
 
   saveBudget(amount: number): Observable<any> {
     const month = this.getMonthKey();

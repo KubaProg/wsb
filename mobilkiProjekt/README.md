@@ -10,7 +10,7 @@ frontend:
 
 npm install
 
-ng serve
+ng serve lub alternatywnie prod build + lite-server
 
 klucze:
 
