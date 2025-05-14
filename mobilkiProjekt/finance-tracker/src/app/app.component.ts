@@ -1,12 +1,25 @@
 import { Component } from '@angular/core';
 import { SwPush } from '@angular/service-worker';
-import { HttpClient, provideHttpClient } from '@angular/common/http';
+import { HttpClient, HttpClientModule, provideHttpClient } from '@angular/common/http';
+import { TransactionFormComponent } from "./components/transaction-form.component";
+import { TransactionListComponent } from "./components/transaction-list.component";
+import { FormsModule } from '@angular/forms';
+import { NavbarComponent } from "./components/navbar.component";
+import { RouterOutlet } from '@angular/router';
+import { NgChartsModule } from 'ng2-charts';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [],
-  templateUrl: './app.component.html',
+  imports: [
+    HttpClientModule,
+    FormsModule,
+    NavbarComponent,
+    RouterOutlet,
+    TransactionFormComponent,
+    TransactionListComponent,
+    NgChartsModule
+],  templateUrl: './app.component.html',
   styleUrl: './app.component.css'
 })
 export class AppComponent {

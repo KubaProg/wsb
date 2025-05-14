@@ -17,6 +17,8 @@ app.use('/api/transactions', transactionsRoutes);
 // Web Push Notifications
 const subscribeRoutes = require('./routes/subscribe');
 app.use('/api/subscribe', subscribeRoutes);
+const budgetRoutes = require('./routes/budget');
+app.use('/api/budget', budgetRoutes);
 
 
 // MongoDB Connection
