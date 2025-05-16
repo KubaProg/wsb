@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="pl">
+  <head>
+    <meta charset="UTF-8" />
+    <title>WeatherNotes - Pogoda</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="manifest" href="manifest.json" />
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <nav style="background: #007bff; padding: 10px">
+      <a href="index.html" style="color: white; margin-right: 15px">Pogoda</a>
+      <a href="add-note.html" style="color: white; margin-right: 15px"
+        >Dodaj notatkę</a
+      >
+      <a href="notes.html" style="color: white">Moje notatki</a>
+    </nav>
+
+    <h1>Sprawdź pogodę</h1>
+
+    <form id="weather-form">
+      <input type="text" id="city-input" placeholder="Wpisz miasto" required />
+      <button type="submit">Pobierz pogodę</button>
+    </form>
+
+    <div id="weather-result"></div>
+
+    <script src="js/main.js"></script>
+    <script src="js/sw-register.js"></script>
+  </body>
+</html>
