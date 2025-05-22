@@ -106,3 +106,25 @@ npm install lite-server
 do wykresow zainstalowalem:
 
 npm install chart.js ng2-charts
+
+JAK MASZ POKAZYWAC:
+
+1. upewnij sie ze masz czysta baze i czysty application local storage w chrome
+
+2. Dodaj wyplate np 10000
+
+3. Pokaz ze sie zmienilo
+
+4. Dodaj wydatek wakacje np 5000 i zmien dane na jakas dalsza
+
+5. Pokaz ze sie zmienilo
+
+6. Pobierz sobie apke PWA
+
+7. wylacz backend -> powiedz ze nie dziala backend, czyli jakbysmy byli offline, dane nie pochodza z mongo, bo jest ono dla nas niedostepne -> pokaz ze dane nadal tam są
+
+8. wracasz do tabu transakcje i dodajesz wydatek 1000zl na kota
+
+9. Pojawia sie wydatek kota -> Idziesz do budzetu pokazac ze ubylo go
+
+10. Wlaczasz backend z powrotem mowiac ze dane nie zapisywaly sie w mongo teraz z kotem tylko w local storage i dlatego musi zadzialc teraz logika synchronizujaca

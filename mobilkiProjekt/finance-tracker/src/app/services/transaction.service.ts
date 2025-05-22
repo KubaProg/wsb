@@ -4,6 +4,7 @@ import { BehaviorSubject, Observable, of } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
 import { Transaction } from '../models/Transaction';
 import { LocalStorageService } from './LocalStorageServce';
+import { v4 as uuidv4 } from 'uuid';
 
 @Injectable({ providedIn: 'root' })
 export class TransactionService {
@@ -25,9 +26,12 @@ export class TransactionService {
     }
 
     this.http.get<Transaction[]>(this.API_URL).pipe(
-      tap(data => {
-        this.localStorage.save(this.LOCAL_KEY, data);
-        this.transactionsSubject.next(data);
+      tap(serverData => {
+        const pending = this.localStorage.load<Transaction[]>(this.PENDING_KEY) || [];
+        const merged = this.mergeTransactions(serverData, pending);
+
+        this.localStorage.save(this.LOCAL_KEY, merged);
+        this.transactionsSubject.next(merged);
       }),
       catchError(() => {
         console.warn('⚠️ Błąd pobierania – fallback do localStorage');
@@ -39,43 +43,61 @@ export class TransactionService {
   }
 
   addTransaction(tx: Transaction): Observable<Transaction> {
+    const txWithId = { ...tx, id: tx.id || uuidv4() };
+
     if (!navigator.onLine) {
-      console.warn('⛔ Brak połączenia – zapisuję lokalnie (offline)');
+      console.warn('⛔ Offline – zapisuję lokalnie');
       const pending = this.localStorage.load<Transaction[]>(this.PENDING_KEY) || [];
-      this.localStorage.save(this.PENDING_KEY, [...pending, tx]);
+      const updatedPending = [...pending, txWithId];
 
-      const current = this.transactionsSubject.getValue();
-      this.transactionsSubject.next([...current, tx]);
+      this.localStorage.save(this.PENDING_KEY, updatedPending);
+      const local = this.localStorage.load<Transaction[]>(this.LOCAL_KEY) || [];
+      this.localStorage.save(this.LOCAL_KEY, [...local, txWithId]);
+      this.transactionsSubject.next([...local, txWithId]);
 
-      return of(tx);
+      return of(txWithId);
     }
 
-    return this.http.post<Transaction>(this.API_URL, tx).pipe(
-      tap(() => this.loadTransactions()),
+    return this.http.post<Transaction>(this.API_URL, txWithId).pipe(
+      tap(() => {
+        this.loadTransactions(); // zamiast ręcznego dodania
+      }),
       catchError(err => {
-        console.warn('⚠️ Błąd zapisu — fallback do localStorage', err);
+        console.warn('❌ Błąd zapisu – fallback do localStorage');
         const pending = this.localStorage.load<Transaction[]>(this.PENDING_KEY) || [];
-        this.localStorage.save(this.PENDING_KEY, [...pending, tx]);
+        this.localStorage.save(this.PENDING_KEY, [...pending, txWithId]);
 
-        const current = this.transactionsSubject.getValue();
-        this.transactionsSubject.next([...current, tx]);
+        const local = this.localStorage.load<Transaction[]>(this.LOCAL_KEY) || [];
+        this.localStorage.save(this.LOCAL_KEY, [...local, txWithId]);
+        this.transactionsSubject.next([...local, txWithId]);
 
-        return of(tx);
+        return of(txWithId);
       })
     );
   }
 
   syncPendingTransactions(): void {
     const pending = this.localStorage.load<Transaction[]>(this.PENDING_KEY) || [];
-    if (pending.length === 0 || !navigator.onLine) return;
+    if (!navigator.onLine || pending.length === 0) return;
 
-    const uploads = pending.map(tx => this.http.post<Transaction>(this.API_URL, tx));
-    Promise.all(uploads.map(req => req.toPromise())).then(() => {
-      console.log('✅ Zsynchronizowano oczekujące transakcje');
+    const uploads = pending.map(tx => this.http.post<Transaction>(this.API_URL, tx).toPromise());
+
+    Promise.all(uploads).then(savedList => {
+      const serverData = this.transactionsSubject.getValue().filter(t => !pending.some(p => p.id === t.id));
+      const all = [...serverData, ...savedList.filter((t): t is Transaction => !!t)];
+
+      this.localStorage.save(this.LOCAL_KEY, all);
       this.localStorage.remove(this.PENDING_KEY);
-      this.loadTransactions();
+      this.transactionsSubject.next(all);
+      console.log('✅ Zsynchronizowano pending transakcje bez duplikacji');
     }).catch(err => {
       console.error('❌ Błąd synchronizacji:', err);
     });
+  }
+
+  private mergeTransactions(server: Transaction[], pending: Transaction[]): Transaction[] {
+    const existingIds = new Set(server.map(t => t.id));
+    const filteredPending = pending.filter(t => !existingIds.has(t.id));
+    return [...server, ...filteredPending];
   }
 }
