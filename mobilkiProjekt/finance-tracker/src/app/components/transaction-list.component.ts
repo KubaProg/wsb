@@ -8,28 +8,17 @@ import { CommonModule } from '@angular/common';
   standalone: true,
   imports: [CommonModule],
   template: `
-    <h2>📜 Lista transakcji</h2>
-    <ul>
-      <li *ngFor="let tx of transactions">
-        {{ tx.date | date:'shortDate' }} | 
-        {{ tx.type === 'income' ? '💰' : '💸' }} 
-        {{ tx.category }} – {{ tx.amount }} zł
-      </li>
-    </ul>
-  `,
-  styles: [`
-    h2 {
-      margin: 10px 0;
-    }
-    ul {
-      list-style: none;
-      padding: 0;
-    }
-    li {
-      padding: 6px 0;
-      border-bottom: 1px solid #ddd;
-    }
-  `]
+    <div class="card">
+  <h2 class="card-title">📜 Lista transakcji</h2>
+  <ul class="transaction-list">
+    <li *ngFor="let tx of transactions">
+      {{ tx.date | date:'shortDate' }} |
+      {{ tx.type === 'income' ? '💰' : '💸' }}
+      {{ tx.category }} – {{ tx.amount }} zł
+    </li>
+  </ul>
+</div>
+  `
 })
 export class TransactionListComponent implements OnInit {
   transactions: Transaction[] = [];

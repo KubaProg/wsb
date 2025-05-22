@@ -9,36 +9,17 @@ import { Transaction } from '../models/Transaction';
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule],
   template: `
-    <form [formGroup]="form" (ngSubmit)="submit()" class="tx-form">
-      <select formControlName="type">
-        <option value="income">Przychód</option>
-        <option value="expense">Wydatek</option>
-      </select>
-      <input formControlName="category" placeholder="Kategoria" />
-      <input type="number" formControlName="amount" placeholder="Kwota" />
-      <input type="date" formControlName="date" />
-      <button type="submit">Zapisz</button>
-    </form>
-  `,
-  styles: [`
-    .tx-form {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      max-width: 400px;
-      margin: auto;
-    }
-    input, select, button {
-      padding: 8px;
-      font-size: 16px;
-    }
-    button {
-      background-color: #4caf50;
-      color: white;
-      border: none;
-      cursor: pointer;
-    }
-  `]
+   <form [formGroup]="form" (ngSubmit)="submit()" class="form tx-form">
+  <select formControlName="type" class="form-control">
+    <option value="income">Przychód</option>
+    <option value="expense">Wydatek</option>
+  </select>
+  <input formControlName="category" placeholder="Kategoria" class="form-control" />
+  <input type="number" formControlName="amount" placeholder="Kwota" class="form-control" />
+  <input type="date" formControlName="date" class="form-control" />
+  <button type="submit" class="btn btn-primary">Zapisz</button>
+</form>
+  `
 })
 export class TransactionFormComponent {
   form: FormGroup;

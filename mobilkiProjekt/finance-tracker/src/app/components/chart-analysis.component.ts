@@ -11,59 +11,22 @@ import { Transaction } from '../models/Transaction';
   selector: 'app-chart-analysis',
   imports: [CommonModule, FormsModule, NgChartsModule],
   template: `
-    <div class="panel">
-      <h2>📈 Analiza finansowa</h2>
-
-      <label>
-        Filtruj miesiąc:
-        <select [(ngModel)]="selectedMonth" (change)="updateCharts()">
-          <option *ngFor="let month of availableMonths" [value]="month">{{ month }}</option>
-        </select>
-      </label>
-
-      <h3>📊 Przychody vs Wydatki</h3>
-      <canvas baseChart [type]="'pie'" [data]="pieChartData" [options]="chartOptions"></canvas>
-
-      <h3>📦 Kategorie</h3>
-      <canvas baseChart [type]="'bar'" [data]="barChartData" [options]="chartOptions"></canvas>
-
-      <h3>📅 Trend dzienny</h3>
-      <canvas baseChart [type]="'line'" [data]="lineChartData" [options]="chartOptions"></canvas>
-    </div>
-  `,
-  styles: [`
-    .panel {
-      max-width: 800px;
-      margin: 20px auto;
-      padding: 20px;
-      border: 1px solid #ccc;
-      border-radius: 10px;
-      background-color: #f9f9f9;
-    }
-
-    h2, h3 {
-      text-align: center;
-      margin-bottom: 15px;
-    }
-
-    label {
-      display: block;
-      margin: 10px auto 20px;
-      text-align: center;
-    }
-
-    select {
-      padding: 6px;
-      margin-left: 8px;
-      font-size: 16px;
-    }
-
-    canvas {
-      margin: 20px auto;
-      display: block;
-      max-width: 100%;
-    }
-  `]
+   <div class="card analysis">
+  <h2 class="card-title">📈 Analiza finansowa</h2>
+  <label class="form-label">
+    Filtruj miesiąc:
+    <select [(ngModel)]="selectedMonth" (change)="updateCharts()" class="form-control">
+      <option *ngFor="let month of availableMonths" [value]="month">{{ month }}</option>
+    </select>
+  </label>
+  <h3 class="chart-header">📊 Przychody vs Wydatki</h3>
+  <canvas baseChart [type]="'pie'" [data]="pieChartData" [options]="chartOptions"></canvas>
+  <h3 class="chart-header">📦 Kategorie</h3>
+  <canvas baseChart [type]="'bar'" [data]="barChartData" [options]="chartOptions"></canvas>
+  <h3 class="chart-header">📅 Trend dzienny</h3>
+  <canvas baseChart [type]="'line'" [data]="lineChartData" [options]="chartOptions"></canvas>
+</div>
+  `
 })
 export class ChartAnalysisComponent {
   selectedMonth: string = this.formatMonth(new Date());

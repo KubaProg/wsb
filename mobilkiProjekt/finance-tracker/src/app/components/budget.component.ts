@@ -10,89 +10,30 @@ import { BudgetService } from "../services/budget.service";
   selector: 'app-budget',
   imports: [CommonModule, FormsModule],
   template: `
-    <div class="budget-container">
-      <h2>🎯 Miesięczny budżet</h2>
+   <div class="card budget">
+  <h2 class="card-title">🎯 Miesięczny budżet</h2>
+  <label class="form-label">
+    Ustaw budżet:
+    <input type="number" [(ngModel)]="monthlyBudget" (change)="onBudgetChange()" class="form-control" />
+  </label>
+  <div class="info-text">📆 Dziś: {{ today | date:'dd.MM.yyyy' }}</div>
+  <div class="info-text">📅 Pozostałe dni w miesiącu: {{ daysLeft }}</div>
+  <div class="progress">
+    <div class="progress-bar" [style.width.%]="progressPercent" [ngClass]="{
+      'bg-success': progressPercent < 50,
+      'bg-warning': progressPercent >= 50 && progressPercent < 90,
+      'bg-danger': progressPercent >= 90
+    }"></div>
+  </div>
+  <div class="info-text">💸 Wydano: {{ spent }} zł</div>
+  <div class="info-text">💼 Pozostało: {{ remaining }} zł</div>
+  <div *ngIf="daysLeft > 0 && remaining > 0" class="daily-budget">
+    🧠 Możesz wydawać około <strong>{{ (remaining / daysLeft) | number:'1.0-2' }} zł</strong> dziennie.
+  </div>
+</div>
 
-      <label>
-        Ustaw budżet:
-        <input type="number" [(ngModel)]="monthlyBudget" (change)="onBudgetChange()" />
-      </label>
-
-      <p>📆 Dziś: {{ today | date:'dd.MM.yyyy' }}</p>
-      <p>📅 Pozostałe dni w miesiącu: {{ daysLeft }}</p>
-
-      <div class="progress-bar">
-        <div class="progress-fill" [style.width.%]="progressPercent" [ngClass]="{
-          'low': progressPercent < 50,
-          'medium': progressPercent >= 50 && progressPercent < 90,
-          'high': progressPercent >= 90
-        }"></div>
-      </div>
-
-      <p>💸 Wydano: {{ spent }} zł</p>
-      <p>💼 Pozostało: {{ remaining }} zł</p>
-
-      <p *ngIf="daysLeft > 0 && remaining > 0">
-        🧠 Możesz wydawać około <strong>{{ (remaining / daysLeft) | number:'1.0-2' }} zł</strong> dziennie.
-      </p>
-    </div>
-  `,
-  styles: [`
-    .budget-container {
-      margin: 20px auto;
-      max-width: 400px;
-      padding: 20px;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      background-color: #f9f9f9;
-    }
-
-    h2 {
-      margin-bottom: 20px;
-      text-align: center;
-    }
-
-    label {
-      display: block;
-      margin-bottom: 10px;
-    }
-
-    input {
-      width: 100%;
-      padding: 8px;
-      font-size: 16px;
-    }
-
-    .progress-bar {
-      height: 20px;
-      background-color: #e0e0e0;
-      border-radius: 10px;
-      overflow: hidden;
-      margin: 15px 0;
-    }
-
-    .progress-fill {
-      height: 100%;
-      transition: width 0.4s ease;
-    }
-
-    .progress-fill.low {
-      background-color: #4caf50;
-    }
-
-    .progress-fill.medium {
-      background-color: #ff9800;
-    }
-
-    .progress-fill.high {
-      background-color: #f44336;
-    }
-
-    p {
-      font-size: 16px;
-      margin-top: 10px;
-    }
-  `]
+  `
+  
 })
 export class BudgetComponent {
   monthlyBudget = 0;

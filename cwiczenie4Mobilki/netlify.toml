@@ -1,0 +1,16 @@
+[[redirects]]
+  from = "/add-note"
+  to = "/add-note.html"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/notes"
+  to = "/notes.html"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/"
+  to = "/index.html"
+  status = 200

@@ -8,11 +8,21 @@
   </head>
   <body>
     <nav style="background: #007bff; padding: 10px">
-      <a href="index.html" style="color: white; margin-right: 15px">Pogoda</a>
-      <a href="add-note.html" style="color: white; margin-right: 15px"
-        >Dodaj notatkę</a
+      <span
+        onclick="navigateTo('index.html')"
+        style="color: white; margin-right: 15px; cursor: pointer"
+        >Pogoda</span
       >
-      <a href="notes.html" style="color: white">Moje notatki</a>
+      <span
+        onclick="navigateTo('add-note.html')"
+        style="color: white; margin-right: 15px; cursor: pointer"
+        >Dodaj notatkę</span
+      >
+      <span
+        onclick="navigateTo('notes.html')"
+        style="color: white; cursor: pointer"
+        >Moje notatki</span
+      >
     </nav>
 
     <h1>Dodaj notatkę</h1>
@@ -29,9 +39,12 @@
 
     <p id="status"></p>
 
-    <a href="notes.html">Zobacz zapisane notatki</a>
-
     <script src="js/add-note.js"></script>
     <script src="js/sw-register.js"></script>
+    <script>
+      function navigateTo(page) {
+        window.location.href = page;
+      }
+    </script>
   </body>
 </html>
